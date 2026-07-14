@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evanđelje dana</title>
+  <meta name="description" content="Evanđelje dana — dnevni tekst evanđelja prema liturgiji dana.">
+  <style>
+    :root {
+      --crvena: #c1121f;
+      --crvena-svijetla: #d92b32;
+      --tinta: #2c2c2a;
+      --siva: #6b6a65;
+      --pozadina: #faf9f6;
+      --kartica: #ffffff;
+      --rub: #e6e3dc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--pozadina);
+      color: var(--tinta);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.8;
+      padding: 2rem 1rem 3rem;
+      min-height: 100vh;
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--kartica);
+      border: 1px solid var(--rub);
+      border-radius: 12px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+    .datum {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--crvena);
+      margin-bottom: 0.4rem;
+    }
+    h1 {
+      font-size: 1.7rem;
+      font-weight: normal;
+      margin-bottom: 0.5rem;
+    }
+    .izreka {
+      font-style: italic;
+      color: var(--siva);
+      margin-bottom: 1.6rem;
+    }
+    .crta {
+      width: 52px;
+      height: 2px;
+      background: var(--crvena);
+      margin: 0 auto 1.6rem;
+    }
+    .tekst { text-align: justify; hyphens: auto; }
+    .tekst p { margin-bottom: 0.9rem; }
+    .tekst p.uvod { text-align: center; }
+    .tekst p.zavrsetak {
+      text-align: center;
+      color: var(--siva);
+      margin-top: 1.2rem;
+      margin-bottom: 0;
+    }
+    .status {
+      color: var(--siva);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.95rem;
+    }
+    .status a { color: var(--crvena); }
+    .poveznice {
+      border-top: 1px solid var(--rub);
+      margin-top: 2.4rem;
+      padding-top: 1.4rem;
+    }
+    .poveznice p {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      color: var(--siva);
+      margin-bottom: 0.7rem;
+    }
+    .poveznice nav {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .poveznice a {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+      color: var(--crvena);
+      text-decoration: none;
+      border: 1px solid var(--rub);
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .poveznice a:hover {
+      border-color: var(--crvena-svijetla);
+      color: var(--crvena-svijetla);
+    }
+    @media (max-width: 480px) {
+      main { padding: 2rem 1.25rem; }
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="datum" id="datum"></p>
+    <h1 id="naslov">Evanđelje dana</h1>
+    <p class="izreka" id="izreka" hidden></p>
+    <div class="crta" hidden id="crta"></div>
+    <div class="tekst" id="tekst">
+      <p class="status">Učitavanje evanđelja dana…</p>
+    </div>
+    <div class="poveznice">
+      <p>Više o liturgiji dana</p>
+      <nav>
+        <a href="https://hilp.hr/liturgija-dana/" target="_blank" rel="noopener">hilp.hr</a>
+        <a href="https://hallow.com/collections/287/" target="_blank" rel="noopener">Hallow</a>
+        <a href="https://hkr.hkm.hr/kategorije/u-svjetlu-bozje-rijeci/" target="_blank" rel="noopener">HKR — U svjetlu Božje riječi</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    async function ucitaj() {
+      const tekstEl = document.getElementById("tekst");
+      try {
+        const odgovor = await fetch("/api/evandjelje");
+        const podaci = await odgovor.json();
+        if (!odgovor.ok) throw new Error(podaci.greska || "Neuspješno dohvaćanje");
+
+        document.getElementById("datum").textContent = podaci.datum || "";
+        document.getElementById("naslov").textContent = "Evanđelje: " + podaci.referenca;
+        document.title = "Evanđelje: " + podaci.referenca;
+
+        if (podaci.izreka) {
+          const izrekaEl = document.getElementById("izreka");
+          izrekaEl.textContent = "„" + podaci.izreka + "”";
+          izrekaEl.hidden = false;
+        }
+        document.getElementById("crta").hidden = false;
+
+        tekstEl.innerHTML = "";
+        podaci.retci.forEach((redak, i) => {
+          const p = document.createElement("p");
+          p.textContent = redak;
+          if (i === 0 && redak.startsWith("Čitanje")) p.className = "uvod";
+          if (redak === "Riječ Gospodnja.") p.className = "zavrsetak";
+          tekstEl.appendChild(p);
+        });
+      } catch (gr) {
+        tekstEl.innerHTML =
+          '<p class="status">Nažalost, evanđelje trenutačno nije moguće dohvatiti (' +
+          gr.message +
+          '). Pročitajte ga izravno na <a href="https://hilp.hr/liturgija-dana/" target="_blank" rel="noopener">hilp.hr</a>.</p>';
+      }
+    }
+    ucitaj();
+  </script>
+</body>
+</html>
