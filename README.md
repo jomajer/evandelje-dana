@@ -9,12 +9,14 @@ automatski dohvaća sa stranice [hilp.hr/liturgija-dana](https://hilp.hr/liturgi
 - `index.html` — statična stranica (naslov, izreka, tekst evanđelja, poveznice).
 - `api/evandjelje.js` — serverless funkcija (Vercel) koja dohvati stranicu
   hilp.hr, izvuče evanđelje i vrati ga kao JSON. Odgovor se kešira 15–30 minuta.
-- `server.mjs` — mali lokalni poslužitelj za razvoj i testiranje.
+- `dev/server.mjs` — mali lokalni poslužitelj za razvoj i testiranje
+  (namjerno u podmapi: Vercel bi `server.mjs` u korijenu prepoznao kao
+  Node aplikaciju i prestao koristiti funkcije iz `api/`).
 
 ## Lokalno pokretanje
 
 ```
-node server.mjs
+node dev/server.mjs
 ```
 
 Zatim otvori http://localhost:8788

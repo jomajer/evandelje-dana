@@ -1,8 +1,8 @@
-import http from "node:http";
+﻿import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { dohvatiEvandjelje } from "./api/evandjelje.js";
+import { dohvatiEvandjelje } from "../api/evandjelje.js";
 
 const korijen = dirname(fileURLToPath(import.meta.url));
 const PORT = 8788;
@@ -16,7 +16,7 @@ http
         odgovor.end(JSON.stringify(podaci));
         return;
       }
-      const html = await readFile(join(korijen, "index.html"));
+      const html = await readFile(join(korijen, "..", "index.html"));
       odgovor.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       odgovor.end(html);
     } catch (gr) {
@@ -24,4 +24,4 @@ http
       odgovor.end(JSON.stringify({ greska: gr.message }));
     }
   })
-  .listen(PORT, () => console.log(`Evanđelje dana: http://localhost:${PORT}`));
+  .listen(PORT, () => console.log(`EvanÄ‘elje dana: http://localhost:${PORT}`));
